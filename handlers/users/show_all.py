@@ -60,12 +60,11 @@ async def send_info_event(call: types.CallbackQuery):
         if _["name"].__eq__(event):
             await call.message.answer(
                 f"""
-                {fmt.hide_link(_['photo'])}
-            {fmt.text(fmt.hbold(f"Концерт группы: #{_['name']}"))} 
+{fmt.text(fmt.hbold(f"Концерт группы: #{_['name']}"))} 
 {fmt.text(f"{_['place']} - {_['time']}.")}
 {fmt.text(f"Ограничение: {fmt.hbold(_['age'])}+")}
 {fmt.text(f"Цена: {fmt.hunderline(_['price'])} рублей")}
-{_['description']}
+{_['description']}{fmt.hide_link(_['photo'])}
 {fmt.hlink("Купить билет прямо сейчас", _['linkToPay'])}""",
                 parse_mode="HTML", disable_web_page_preview=False
             )
