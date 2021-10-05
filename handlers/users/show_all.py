@@ -22,7 +22,7 @@ LSP_event = {
     'id': 2,
     'name': 'ЛСП',
     'place': 'Circus Concert Hall',
-    'time': '28 ноября, воскресенье, 20:00',
+    'time': '22 ноября, понедельник, 20:00',
     'price': 1100.0,
     'linkToPay': 'https://afisha.yandex.ru/krasnoyarsk/concert/lsp-2021-11-22?source=event',
     'age': 16,
@@ -38,7 +38,7 @@ def get_keyboard_events():
     buttons = []
     for event in test_events:
         buttons.append(types.InlineKeyboardButton(
-            text=f"{event['name']}",
+            text=event['name'],
             callback_data=f"event_{event['name']}"
         ))
     keyboard = types.InlineKeyboardMarkup()
@@ -53,20 +53,4 @@ async def show_all(message: types.Message):
         reply_markup=get_keyboard_events())
 
 
-@dp.callback_query_handler(Text(startswith="event_"))
-async def send_info_event(call: types.CallbackQuery):
-    event = call.data.split("_")[1]
-    for _ in test_events:
-        if _["name"].__eq__(event):
-            await call.message.answer(
-                f"""
-{fmt.text(fmt.hbold(f"Концерт группы: #{_['name']}"))} 
-{fmt.text(f"{_['place']} - {_['time']}.")}
-{fmt.text(f"Ограничение: {fmt.hbold(_['age'])}+")}
-{fmt.text(f"Цена: {fmt.hunderline(_['price'])} рублей")}
-{_['description']}{fmt.hide_link(_['photo'])}
-{fmt.hlink("Купить билет прямо сейчас", _['linkToPay'])}""",
-                parse_mode="HTML", disable_web_page_preview=False
-            )
-            break
-    await call.answer()
+
