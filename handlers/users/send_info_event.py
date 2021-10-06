@@ -9,15 +9,26 @@ from loader import dp
 
 def get_keyboard_use_event(event):
     # формирование кнопки покупки
-    keyboard = []
+    buttons = []
     for _ in test_events:
         if _["name"].__eq__(event):
-            keyboard = types.InlineKeyboardMarkup().add(
+            buttons = [types.InlineKeyboardButton(
+                text=f"Купить билет на группу {_['name']}",
+                url=_['linkToPay']),
                 types.InlineKeyboardButton(
-                    text=f"Купить билет на группу {_['name']}",
-                    url=_['linkToPay']))
+                    text="Поставить уведомления",
+                    callback_data=f"set_notify_{_['name']}"
+                )]
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(*buttons)
     return keyboard
     # окончание формирования кнопки покупки
+
+
+@dp.callback_query_handler(Text(startswith="set_notify_"))
+async def set_notify_event(call: types.CallbackQuery):
+    event = call.data.split("_")[2]
+    await call.message.answer(event)
 
 
 @dp.callback_query_handler(Text(startswith="event_"))
