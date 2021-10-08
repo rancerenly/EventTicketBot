@@ -7,7 +7,6 @@ from aiogram.dispatcher.filters import Text
 # временная мера, для проверки работоспособности бота
 from data import config
 from handlers.users.show_all import test_events
-
 from loader import dp, scheduler
 
 
@@ -20,6 +19,8 @@ async def send_notify_event(dp: Dispatcher):
     await dp.bot.send_message(
         config.ADMINS[0], "Сообщение по таймеру"
     )
+
+
 
 
 def get_keyboard_use_event(event):
@@ -40,8 +41,11 @@ def get_keyboard_use_event(event):
     # окончание формирования кнопки покупки
 
 
-def get_keyboard_set_time(event):
+def reformat_str_to_datetime(date):
+    return datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
 
+
+def get_keyboard_set_time(event):
     buttons = [
         types.InlineKeyboardButton(
             text="За месяц",
@@ -51,19 +55,31 @@ def get_keyboard_set_time(event):
             callback_data=f"time_14_{event}"),
         types.InlineKeyboardButton(
             text="За сутки",
-            callback_data=f"time_1_{event}"
-        ),
-        types.InlineKeyboardButton(
-            text="За восемь часов",
-            callback_data=f"time_0_8_{event}"
-        ),
-        types.InlineKeyboardButton(
-            text="За два часа",
-            callback_data=f"time_0_2_{event}"
-        )]
+            callback_data=f"time_1_{event}")]
+        # types.InlineKeyboardButton(
+        #     text="За восемь часов",
+        #     callback_data=f"time_8H_{event}"
+        # ),
+        # types.InlineKeyboardButton(
+        #     text="За два часа",
+        #     callback_data=f"time_2H_{event}"
+        # )
+
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*buttons)
     return keyboard
+
+
+@dp.callback_query_handler(Text(startswith="time_"))
+async def set_time_to_notify(call: types.CallbackQuery):
+    time = call.data.split("_")[1]
+    event = call.data.split("_")[2]
+    for _ in test_events:
+        if _["name"].__eq__(event):
+            date = reformat_str_to_datetime(_['time']) - timedelta(int(time))
+            schedule_job(date)
+            await call.message.answer(f"Уведомлю Вас о концерте {event} за {time} дней.")
+    await call.answer()
 
 
 @dp.callback_query_handler(Text(startswith="set_notify_"))
@@ -80,7 +96,6 @@ async def set_notify_event(call: types.CallbackQuery):
 @dp.callback_query_handler(Text(startswith="event_"))
 async def send_info_event(call: types.CallbackQuery):
     event = call.data.split("_")[1]
-
     for _ in test_events:
         if _["name"].__eq__(event):
             await call.message.answer(
@@ -95,5 +110,3 @@ async def send_info_event(call: types.CallbackQuery):
             )
             break
     await call.answer()
-
-
