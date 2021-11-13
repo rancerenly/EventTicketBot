@@ -4,6 +4,7 @@ import sqlite3
 from loader import dp
 
 
+
 # @dp.message_handler(commands="print")
 # async def bot_echadso(message: types.Message):
 #     conn = sqlite3.connect('D:\\DB\events.db', check_same_thread=False)
