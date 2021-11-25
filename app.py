@@ -1,4 +1,9 @@
+from datetime import datetime
+
+from data import config
+from utils.db_api import database
 from aiogram import executor
+from peewee import SqliteDatabase
 
 from loader import dp, scheduler
 import middlewares, filters, handlers
