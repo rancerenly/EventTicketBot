@@ -10,6 +10,7 @@ from keyboards.inline.keyboards import get_keyboard_use_event, get_keyboard_set_
 
 from loader import dp, scheduler
 from utils.db_api import database
+from utils.misc import logging
 
 
 def schedule_job(user, event, notify_date):
@@ -19,10 +20,24 @@ def schedule_job(user, event, notify_date):
 
 
 async def send_notify_event(dp: Dispatcher):
-    await dp.bot.send_message(
-        database.User.select(database.User.id == database.Notification.user),
-        f"Уведомляю Вас о концерте {database.Notification.event}"
+    notifications = database.Notification.select(
+        database.Notification.user, database.Notification.date,
+        database.Notification.event
+    ).where(
+        database.Notification.date.day == datetime.today().day
     )
+    for _ in notifications:
+        event = database.Event.get(id=_.event_id)
+        try:
+            await dp.bot.send_message(
+                            _.user_id, f"Уведомляю Вас о концерте {event.name}\nДо концерта осталось "
+                                       f"{event.date.day - datetime.now().day} дней."
+                        )
+        except Exception as err:
+            pass
+    database.Notification.delete().where(
+        database.Notification.date.day == datetime.today().day
+    ).execute()
 
 
 @dp.callback_query_handler(Text(startswith="time_"))
@@ -30,8 +45,7 @@ async def set_time_to_notify(call: types.CallbackQuery):
     time = call.data.split("_")[1]
     event_name = call.data.split("_")[2]
     event = database.Event.get(database.Event.name == event_name)
-    notify_date = datetime.now() + timedelta(seconds=10)
-    # notify_date = event.date - timedelta(int(time))
+    notify_date = event.date - timedelta(int(time))
     schedule_job(call.from_user.id, event, notify_date)
     await call.message.answer(f"Уведомлю Вас о концерте {event.name} за {time} дней.")
     await call.answer()

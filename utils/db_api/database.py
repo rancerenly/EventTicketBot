@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from peewee import *
 from data import config
 
