@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import aiogram.utils.markdown as fmt
 from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import Text
-
+from BL.logic import search_event_by_id, notify_day
 from data import config
 
 from keyboards.inline.keyboards import get_keyboard_use_event, get_keyboard_set_time
@@ -30,9 +30,9 @@ async def send_notify_event(dp: Dispatcher):
         event = database.Event.get(id=_.event_id)
         try:
             await dp.bot.send_message(
-                            _.user_id, f"Уведомляю Вас о концерте {event.name}\nДо концерта осталось "
-                                       f"{event.date.day - datetime.now().day} дней."
-                        )
+                _.user_id, f"Уведомляю Вас о концерте {event.name}\nДо мероприятия осталось "
+                           f"{event.date.day - datetime.now().day} дней."
+            )
         except Exception as err:
             pass
     database.Notification.delete().where(
@@ -43,11 +43,12 @@ async def send_notify_event(dp: Dispatcher):
 @dp.callback_query_handler(Text(startswith="time_"))
 async def set_time_to_notify(call: types.CallbackQuery):
     time = call.data.split("_")[1]
-    event_name = call.data.split("_")[2]
-    event = database.Event.get(database.Event.name == event_name)
-    notify_date = event.date - timedelta(int(time))
+    event_id = call.data.split("_")[2]
+    event = search_event_by_id(event_id)
+    notify_date = notify_day(event.date, time)
+    print(timedelta(microseconds=datetime.now().microsecond))
     schedule_job(call.from_user.id, event, notify_date)
-    await call.message.answer(f"Уведомлю Вас о концерте {event.name} за {time} дней.")
+    await call.message.answer(f"Уведомлю Вас о мероприятии {event.name} за {time} дней.")
     await call.answer()
 
 
@@ -60,19 +61,16 @@ async def set_notify_event(call: types.CallbackQuery):
 
 @dp.callback_query_handler(Text(startswith="name_"))
 async def send_info_event(call: types.CallbackQuery):
-    event_name = call.data.split("_")[1]
-    event = database.Event.get(database.Event.name == event_name)
+    event_id = call.data.split("_")[1]
+    event = search_event_by_id(event_id)
     await call.message.answer(
         f"""
-{fmt.text(fmt.hbold(f"Концерт группы: #{event.name}"))} 
+{fmt.text(fmt.hbold(f"Мероприятие: {event.name}"))} 
 {fmt.text(f"{event.place} - {event.date}.")}
 {fmt.text(f"Ограничение: {fmt.hbold(event.age)}+")}
 {fmt.text(f"Цена: {fmt.hunderline(event.price)} рублей")}
-{event.description}
-        {fmt.hide_link(event.photo)}""",
-        parse_mode="HTML",
-        reply_markup=get_keyboard_use_event(event_name),
+{event.description} {fmt.hide_link(event.photo)} """,
+        reply_markup=get_keyboard_use_event(event.id),
+        parse_mode="HTML"
     )
     await call.answer()
-
-
