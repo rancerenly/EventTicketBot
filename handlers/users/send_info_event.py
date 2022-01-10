@@ -74,3 +74,4 @@ async def send_info_event(call: types.CallbackQuery):
         parse_mode="HTML"
     )
     await call.answer()
+

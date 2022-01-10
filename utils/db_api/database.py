@@ -65,3 +65,45 @@ class Notification(BaseModel):
         table_name = 'Notification'
 
 
+def create_tables():
+    with conn:
+        conn.create_tables([City, Genre, User, Event, Notification])
+
+
+def create_events():
+    Event.create(
+        name='Пой. Танцуй. Люби',
+        city=1,
+        genre=6,
+        date='2022-01-11 19:00',
+        place='Театр им. Пушкина',
+        age=16,
+        link='https://sibdrama.ru/events/poy-tancuy-lyubi',
+        photo='https://sibdrama.ru/content/events/0c/0ce3fea9505c7b8ceb678bd2742883f1-devichnik-08-05-2021-009.jpg',
+        price=700,
+        description='Есть пьесы, написанные мужчинами, сыгранные мужчинами и рассказывающие о мужчинах. Эта пьеса — нечто прямо противоположное.'
+    )
+    Event.create(
+        name='Земля Эльзы',
+        city=1,
+        genre=6,
+        date='2022-01-13 19:00',
+        place='Театр им. Пушкина',
+        age=16,
+        link='https://sibdrama.ru/events/zemlya-elzy',
+        photo='https://sibdrama.ru/content/events/cc/cc55fd3ee354c76113b08d780ae129f2-574-1.jpg',
+        price=300,
+        description='Это спектакль о любви между двумя пожилыми людьми, поставленный по одноименной пьесе Ярославы Пулинович. История о том, что никогда не поздно начать жить настоящим, надеяться на лучшее будущее, даже если что-то идет не так, даже если все вокруг не понимают и осуждают тебя. Ведь найдется человек, который примет тебя таким, каков ты есть.'
+    )
+    Event.create(
+        name='Горе от ума',
+        city=1,
+        genre=6,
+        date='2022-01-14 19:00',
+        place='Театр им. Пушкина',
+        age=14,
+        link='https://sibdrama.ru/events/gore-ot-uma',
+        photo='https://sibdrama.ru/content/events/c8/c81ddc3fb6f3fb86735173a8d947fe46-foto-dlya-spiskov.jpg',
+        price=300,
+        description='Действие известной всем комедии А.С. Грибоедова перенесено в 70-80 годы XX века. На сцене – впечатляющие интерьеры московского метро, артисты в модных костюмах советского времени, звучат хиты 70-80-х годов.'
+    )
